@@ -1,4 +1,4 @@
-// ãëîáàëüíûå ïåðåìåííûå
+// глобальные переменные
 var container, camera, controls, scene, renderer, light;
 var Cube;
 var CubeWire;
@@ -7,25 +7,25 @@ var CuSolid;
 var Cu2;
 var Cu2Solid;
 
-// íà÷èíàåì ðèñîâàòü ïîñëå ïîëíîé çàãðóçêè ñòðàíèöû
+// начинаем рисовать после полной загрузки страницы
 window.onload = function () {
     init();
     animate();
 }
 
 function init() {
-    scene = new THREE.Scene(); //ñîçäàåì ñöåíó
-    AddCamera(0, 500, 700); //äîáàâëÿåì êàìåðó
-    AddLight(0, 0, 700); //óñòàíàâëèâàåì áåëûé ñâåò
+    scene = new THREE.Scene(); //создаем сцену
+    AddCamera(0, 500, 700); //добавляем камеру
+    AddLight(0, 0, 700); //устанавливаем белый свет
 
-//ñîçäàåì ðåíäåðåð
+//создаем рендерер
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setClearColor(0xffffff);
     renderer.setSize(window.innerWidth, window.innerHeight);
     container = document.getElementById('MyWebGLApp');
     container.appendChild(renderer.domElement);
 
-//äîáàâëÿåì êóá
+//добавляем фигуру
     var geometry = new THREE.BoxGeometry(500, 200, 300);
     var geometry2 = new THREE.BoxGeometry(150, 200, 100);
     var geometry3 = new THREE.BoxGeometry(150, 200, 100);

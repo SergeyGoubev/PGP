@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Примитивы WebGL</title>
+    <script type="text/javascript" src="../library/gl-matrix-min.js"></script>
+    <script id="shader-fs" type="x-shader/x-fragment">
+    precision mediump float;
+    void main(void) {     gl_FragColor = vec4(1, 1, 1, 1.0);    }
+</script>
+    <script id="shader-vs" type="x-shader/x-vertex">
+    attribute vec3 aVertexPosition;
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
+    void main(void) {
+        gl_PointSize = 5.0;
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+    }
+</script>
+    <script type="text/javascript">
+        var gl;
+        var indexBuffer; //буфер индексов
+
+        function initGL(canvas) {
+            try {
+                gl = canvas.getContext("experimental-webgl");
+                gl.viewportWidth = canvas.width;
+                gl.viewportHeight = canvas.height;
+            } catch (e) {
+            }
+            if (!gl) {
+                alert("Не поддерживается WebGL");
+            }
+        }
+
+        function getShader(gl, id) {
+            var shaderScript = document.getElementById(id);
+            if (!shaderScript) {
+                return null;
+            }
+            var str = "";
+            var k = shaderScript.firstChild;
+            while (k) {
+                if (k.nodeType == 3) {
+                    str += k.textContent;
+                }
+                k = k.nextSibling;
+            }
+
+            var shader;
+            if (shaderScript.type == "x-shader/x-fragment") {
+                shader = gl.createShader(gl.FRAGMENT_SHADER);
+            } else if (shaderScript.type == "x-shader/x-vertex") {
+                shader = gl.createShader(gl.VERTEX_SHADER);
+            } else {
+                return null;
+            }
+
+            gl.shaderSource(shader, str);
+            gl.compileShader(shader);
+
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                alert(gl.getShaderInfoLog(shader));
+                return null;
+            }
+            return shader;
+        }
+
+        var shaderProgram;
+
+        function initShaders() {
+            var fragmentShader = getShader(gl, "shader-fs");
+            var vertexShader = getShader(gl, "shader-vs");
+            shaderProgram = gl.createProgram();
+            gl.attachShader(shaderProgram, vertexShader);
+            gl.attachShader(shaderProgram, fragmentShader);
+            gl.linkProgram(shaderProgram);
+            if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+                alert("Шейдеры не инициализируются");
+            }
+            gl.useProgram(shaderProgram);
+            shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+            gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+            shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+            shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+        }
+
+        var mvMatrix = mat4.create();
+        var pMatrix = mat4.create();
+
+        function setMatrixUniforms() {
+            gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+            gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+        }
+
+        var vertexBuffer;
+        var vertices;
+
+        function initBuffers() {
+            vertexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            vertices = [
+                1.0, 8.0, 0.0,
+                11.0, 11.0, 0.0,
+                10.0, 6.0, 0.0,
+                12.0, 0.0, 0.0,
+                4.0, 3.0, 0.0,
+                10.0, 4.0, 0.0,
+                8.0, 8.0, 0.0,
+                7.0, 10.0, 0.0,
+                7.0, 12.0, 0.0,
+                3.0, 4.0, 0.0,
+                7.0, 6.0, 0.0,
+                7.0, 10.0, 0.0
+            ];
+            for (let i = 0; i < vertices.length-1; i++) {
+                vertices[i]=vertices[i]/7 -0.7;
+            }
+            indices = [8, 1, 2, 5, 3, 12, 4, 9, 10, 6, 7, 11];
+            //indices = [11, 1, 10, 2, 12, 7, 4, 3, 9, 5, 6, 8];
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+            vertexBuffer.itemSize = 3;
+            vertexBuffer.numItems = 12;
+            indexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+            indexBuffer.numberOfItems = indices.length;
+        }
+
+
+        function drawScene() {
+            gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            mat4.perspective(pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
+            mat4.identity(mvMatrix);
+            mat4.translate(mvMatrix, mvMatrix, [0.0, -0.5, -2.0]);
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+            setMatrixUniforms();
+
+            var selDrawType = document.getElementById("selDrawType").value;
+            var drawType = eval(selDrawType);
+            // gl.drawArrays(drawType, 0, vertexBuffer.numItems);
+            gl.drawElements(drawType, indexBuffer.numberOfItems, gl.UNSIGNED_SHORT, 0);
+        }
+
+        function webGLStart() {
+            var canvas = document.getElementById("canvas");
+            initGL(canvas);
+            initShaders();
+            initBuffers();
+            gl.clearColor(0.2, 0.2, 0.2, 1.0);
+            drawScene();
+        }
+    </script>
+</head>
+<body onload="webGLStart();">
+<select id="selDrawType" style="margin: 20px;" onchange="drawScene(this.value)">
+    <option>gl.POINTS</option>
+    <option>gl.LINES</option>
+    <option>gl.LINE_STRIP</option>
+    <option>gl.LINE_LOOP</option>
+    <option>gl.TRIANGLES</option>
+    <option>gl.TRIANGLE_STRIP</option>
+    <option>gl.TRIANGLE_FAN</option>
+</select>
+<br/>
+<canvas id="canvas" width="500" height="500"></canvas>
+<div><a href="LB1.html">Вернуться на главную</a></div>
+</body>
+</html>

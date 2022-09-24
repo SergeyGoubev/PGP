@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Установка цвета вершин</title>
-<meta content="charset=utf-8">
-<script type="text/javascript" src="/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=r0WOekQjpNnoKoOPirT9bqUhZnNNdrNzDiPUm1gzAnR_VBxUFOsYkCzZ_UaYA56U6AIsNkrGU0hQxov7cBZUOLu7yTHMDMdj1s-ga4Ol403TE5Jcb9yF9sfNvGkIZkmfET5GT8oe9lTuMm7V7PYdWBe-ehPvuv7_tQYoH4JmXno" charset="UTF-8"></script></head>
+    <title>Установка цвета вершин</title>
+    <meta content="charset=utf-8">
+</head>
 <body>
 <canvas id="canvas3D" width="400" height="300">Ваш браузер не поддерживает элемент canvas</canvas>
 <script id="shader-fs" type="x-shader/x-fragment">
 varying highp vec4 vColor;
   void main(void) {  gl_FragColor = vColor;  }
+
 </script>
 <script id="shader-vs" type="x-shader/x-vertex">
 attribute highp vec3 aVertexPosition;
@@ -18,46 +19,49 @@ void main(void) {
     gl_Position = vec4(aVertexPosition, 1.0);
     vColor = vec4(aVertexColor, 1.0);
 }
+
 </script>
 <script type="text/javascript">
-var gl;
-var shaderProgram;
-var vertexBuffer; // буфер вершин
-var colorBuffer; //буфер цветов
-// установка шейдеров
-function initShaders() {
-  var fragmentShader = getShader(gl.FRAGMENT_SHADER, 'shader-fs');
-  var vertexShader = getShader(gl.VERTEX_SHADER, 'shader-vs');
-  shaderProgram = gl.createProgram();
-  gl.attachShader(shaderProgram, vertexShader);
-  gl.attachShader(shaderProgram, fragmentShader);
-  gl.linkProgram(shaderProgram);
-  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-  alert("Не удалсь установить шейдеры");
-     }
-  gl.useProgram(shaderProgram);
-  shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-  gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-  shaderProgram.vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
-  gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
-}
-// Функция создания шейдера
-function getShader(type,id) {
- var source = document.getElementById(id).innerHTML;
- var shader = gl.createShader(type);
- gl.shaderSource(shader, source);
- gl.compileShader(shader);
- if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-  alert("Ошибка компиляции шейдера: " + gl.getShaderInfoLog(shader));
-  gl.deleteShader(shader);   
-  return null;
- }
- return shader;  
-}
- // установка буферов вершин и индексов
-function initBuffers() {
-  var vertices = [
-         0.0,  0.8,  0.0,
+    var gl;
+    var shaderProgram;
+    var vertexBuffer; // буфер вершин
+    var colorBuffer; //буфер цветов
+    // установка шейдеров
+    function initShaders() {
+        var fragmentShader = getShader(gl.FRAGMENT_SHADER, 'shader-fs');
+        var vertexShader = getShader(gl.VERTEX_SHADER, 'shader-vs');
+        shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, vertexShader);
+        gl.attachShader(shaderProgram, fragmentShader);
+        gl.linkProgram(shaderProgram);
+        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+            alert("Не удалсь установить шейдеры");
+        }
+        gl.useProgram(shaderProgram);
+        shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+        gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+        shaderProgram.vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
+        gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
+    }
+
+    // Функция создания шейдера
+    function getShader(type, id) {
+        var source = document.getElementById(id).innerHTML;
+        var shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            alert("Ошибка компиляции шейдера: " + gl.getShaderInfoLog(shader));
+            gl.deleteShader(shader);
+            return null;
+        }
+        return shader;
+    }
+
+    // установка буферов вершин и индексов
+    function initBuffers() {
+        var vertices = [
+            0.0,  0.8,  0.0,
             -0.25,  0.35,  0.0,
             -0.75,  0.25,  0.0,
             -0.4,  -0.1,  0.0,
@@ -66,55 +70,64 @@ function initBuffers() {
             0.5,  -0.6,  0.0,
             0.4,  -0.1,  0.0,
             0.75,  0.25,  0.0,
-            0.25,  0.35,  0.0
-  ];
-  // установка буфера вершин
-  vertexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-  vertexBuffer.itemSize = 3;
-  vertexBuffer.numberOfItems = 10;
-  var сolors = [
-        1.0, 0.0, 0.0,
-        0.0, 0.0, 1.0,
-        0.0, 1.0, 0.0,
-        1.0, 1.0, 0.0,
-        0.0, 1.0, 1.0,
-        1.0, 1.0, 1.0,
-        1.0, 0.0, 1.0,
-        1.0, 0.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 0.0, 1.0,
-  ];
-  colorBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(сolors), gl.STATIC_DRAW);
-}
- // отрисовка
-function draw() {    
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 
-                   vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, 
-       vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-  gl.drawArrays(gl.LINE_LOOP, 0, vertexBuffer.numberOfItems);
-}
-window.onload=function(){
-  var canvas = document.getElementById("canvas3D");
-  try { gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl"); }
-  catch(e) {} if (!gl) { alert("Ваш браузер не поддерживает WebGL"); }
-  if(gl){
-  gl.viewportWidth = canvas.width;
-  gl.viewportHeight = canvas.height;
-  initShaders();
-  initBuffers();
-  draw();   
-  }
-}
+            0.25,  0.35,  0.0,
+            0.0,  0.8,  0.0
+        ];
+        // установка буфера вершин
+        vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        vertexBuffer.itemSize = 3;
+        vertexBuffer.numberOfItems = 11;
+        var сolors = [
+            1.0, 0.0, 1.0,
+            0.0, 1.0, 1.0,
+            0.0, 1.0, 1.0,
+            1.0, 0.0, 1.0,
+            0.0, 1.0, 1.0,
+            1.0, 1.0, 1.0,
+            0.0, 1.0, 1.0,
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 1.0,
+            0.0, 1.0, 1.0,
+            1.0, 0.0, 1.0
+        ];
+        colorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(сolors), gl.STATIC_DRAW);
+    }
+    // отрисовка
+    function draw() {
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
+            vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        gl.vertexAttribPointer(shaderProgram.vertexColorAttribute,
+            vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexBuffer.numberOfItems);
+    }
+
+    window.onload = function () {
+        var canvas = document.getElementById("canvas3D");
+        try {
+            gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        } catch (e) {
+        }
+        if (!gl) {
+            alert("Ваш браузер не поддерживает WebGL");
+        }
+        if (gl) {
+            gl.viewportWidth = canvas.width;
+            gl.viewportHeight = canvas.height;
+            initShaders();
+            initBuffers();
+            draw();
+        }
+    }
 </script>
+<div><a href="LB2.html">Вернуться на главную</a></div>
 </body>
 </html>
